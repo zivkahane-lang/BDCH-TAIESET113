@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>הדרכות | הטייסת</title>
+<meta name="theme-color" content="#0a0a09">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <img src="icons/logo-source.png" alt="לוגו">
+      עדכון בד״ח
+    </a>
+    <a class="back-link" href="index.html">→ חזרה לדף הבית</a>
+  </div>
+
+  <div class="page-head">
+    <div class="eyebrow">02 · חומר עיקרי</div>
+    <h1 class="title">הדרכות</h1>
+    <div class="bolt-rule"></div>
+    <p class="lead">שלושה סרטוני הדרכה קצרים. מומלץ לצפות לפי הסדר.</p>
+  </div>
+
+  <div class="stack">
+
+    <div class="item">
+      <div class="item-head">
+        <h3>1 · מהות העדכון</h3>
+        <span class="tag">MP4</span>
+      </div>
+      <p>סקירה כללית של מהות הבד״ח החדש ומה משתנה.</p>
+      <!-- להחלפה: שימי את קובץ הוידאו בתיקיית assets/videos/ עם השם המתאים, או הצביעי לקישור חיצוני -->
+      <video controls preload="none" poster="icons/icon-512.png">
+        <source src="assets/videos/mahut-haidkun.mp4" type="video/mp4">
+        הדפדפן שלך לא תומך בהצגת וידאו.
+      </video>
+    </div>
+
+    <div class="item">
+      <div class="item-head">
+        <h3>2 · בד״ח אדום</h3>
+        <span class="tag red">MP4</span>
+      </div>
+      <p>הדרכה מפורטת על פרק הבד״ח האדום.</p>
+      <video controls preload="none" poster="icons/icon-512.png">
+        <source src="assets/videos/bdch-adom.mp4" type="video/mp4">
+        הדפדפן שלך לא תומך בהצגת וידאו.
+      </video>
+    </div>
+
+    <div class="item">
+      <div class="item-head">
+        <h3>3 · בד״ח צהוב</h3>
+        <span class="tag yellow">MP4</span>
+      </div>
+      <p>הדרכה מפורטת על פרק הבד״ח הצהוב.</p>
+      <video controls preload="none" poster="icons/icon-512.png">
+        <source src="assets/videos/bdch-tzahov.mp4" type="video/mp4">
+        הדפדפן שלך לא תומך בהצגת וידאו.
+      </video>
+    </div>
+
+    <div class="note-box">
+      <b>הערה טכנית:</b> יש להעלות את שלושת קובצי ה-MP4 לתיקייה <span class="mono">assets/videos/</span> עם השמות: <span class="mono">mahut-haidkun.mp4</span>, <span class="mono">bdch-adom.mp4</span>, <span class="mono">bdch-tzahov.mp4</span> (או לשנות את השמות בקוד בהתאם). קבצי וידאו נוטים להיות כבדים — אם GitHub Pages מתקשה, אפשר גם להעלות ל-YouTube כ"לא רשום" (Unlisted) ולהטמיע משם.
+    </div>
+  </div>
+
+  <footer>
+    <span>עודכן לאחרונה: <span class="mono" id="lastUpdated">—</span></span>
+    <span class="mono">v1.0</span>
+  </footer>
+</div>
+<script>document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('he-IL');
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }</script>
+</body>
+</html>

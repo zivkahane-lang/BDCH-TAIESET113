@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>הערות ופידבק | הטייסת</title>
+<meta name="theme-color" content="#0a0a09">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .form-embed{
+    width:100%;
+    min-height:520px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--panel);
+    overflow:hidden;
+  }
+  .form-embed iframe{
+    width:100%;
+    height:520px;
+    border:0;
+    display:block;
+  }
+  .placeholder-box{
+    padding:60px 24px;
+    text-align:center;
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.8;
+  }
+  .placeholder-box .icon{
+    width:40px; height:40px; margin:0 auto 16px; color:var(--yellow);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <img src="icons/logo-source.png" alt="לוגו">
+      עדכון בד״ח
+    </a>
+    <a class="back-link" href="index.html">→ חזרה לדף הבית</a>
+  </div>
+
+  <div class="page-head">
+    <div class="eyebrow">04 · פתוח לכולם, פרטי בתשובות</div>
+    <h1 class="title">הערות ופידבק</h1>
+    <div class="bolt-rule"></div>
+    <p class="lead">כל מי שנכנס לאתר יכול לכתוב כאן הערה, שאלה או ביקורת. הטופס אנונימי מבחינת שאר הגולשים — רק בעל/ת האתר רואה את התשובות שנאספות.</p>
+  </div>
+
+  <div class="stack">
+    <div class="item" style="padding:0; overflow:hidden;">
+
+      <!--
+        ============================================================
+        להטמעת הטופס:
+        1. צרי טופס ב-forms.google.com (שאלה פתוחה אחת מספיקה)
+        2. Send -> הטאב עם < > (Embed HTML) -> העתיקי את קוד ה-iframe
+        3. הדביקי אותו כאן במקום ה-div עם ה-placeholder-box למטה
+           (או פשוט תני לי את קוד ה-iframe ואני אשתיל אותו)
+        ============================================================
+      -->
+      <div class="form-embed">
+        <div class="placeholder-box">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M15 3v5h5"/><path d="M8.5 13h7M8.5 16.5h7M8.5 9.5h3"/></svg>
+          </div>
+          כאן ייכנס טופס גוגל פורמס להערות ופידבק.<br>
+          שלחי לי את קוד ה-iframe מהטופס ואני אשתיל אותו כאן.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="note-box">
+      <b>איך רואים את התשובות:</b> נכנסים לטופס בחשבון הגוגל שיצר אותו (forms.google.com) → לשונית "Responses" → אפשר לצפות שם או לפתוח כגיליון גוגל (Google Sheet) עם כפתור הירוק הקטן. רק מי שיצר את הטופס (או מי שהוזמן במפורש) רואה את זה — לא הגולשים.
+    </div>
+  </div>
+
+  <footer>
+    <span>עודכן לאחרונה: <span class="mono" id="lastUpdated">—</span></span>
+    <span class="mono">v1.0</span>
+  </footer>
+</div>
+<script>
+document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('he-IL');
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+</script>
+</body>
+</html>

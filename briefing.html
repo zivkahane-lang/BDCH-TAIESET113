@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>הבד״ח | הטייסת</title>
+<meta name="theme-color" content="#0a0a09">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <img src="icons/logo-source.png" alt="לוגו">
+      עדכון בד״ח
+    </a>
+    <a class="back-link" href="index.html">→ חזרה לדף הבית</a>
+  </div>
+
+  <div class="page-head">
+    <div class="eyebrow">01 · חומר עיקרי</div>
+    <h1 class="title">הבד״ח</h1>
+    <div class="bolt-rule"></div>
+    <p class="lead">המצגת המלאה של הבד״ח החדש. המצגת כוללת קישורים פנימיים בין הפרקים — מומלץ לפתוח אותה במצב מצגת (Slide Show) לניווט הנוח ביותר.</p>
+  </div>
+
+  <div class="stack">
+    <div class="item">
+      <div class="item-head">
+        <h3>מצגת הבד״ח המלאה</h3>
+        <span class="tag yellow">PPTX</span>
+      </div>
+      <p>הקובץ המלא, כולל קישורים בין הפרקים השונים.</p>
+      <!-- להחלפה: עדכני את הקישור לכתובת האמיתית של קובץ ה-PPTX (למשל קישור לגוגל דרייב, או קובץ שהעליתם ל-assets/) -->
+      <a class="btn" href="assets/bdch.pptx" target="_blank" rel="noopener">↓ פתיחת המצגת</a>
+    </div>
+
+    <div class="note-box">
+      <b>הערה טכנית:</b> כרגע הכפתור מצביע לקובץ בתיקייה <span class="mono">assets/bdch.pptx</span>.
+      כדי לחבר את המצגת האמיתית, יש שתי אפשרויות: (1) להעלות את קובץ ה-PPTX לתיקיית <span class="mono">assets</span> באתר, או (2) להחליף את הקישור בכתובת של קובץ ששמור בגוגל דרייב / OneDrive עם הרשאת צפייה.
+    </div>
+  </div>
+
+  <footer>
+    <span>עודכן לאחרונה: <span class="mono" id="lastUpdated">—</span></span>
+    <span class="mono">v1.0</span>
+  </footer>
+</div>
+<script>document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('he-IL');
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }</script>
+</body>
+</html>

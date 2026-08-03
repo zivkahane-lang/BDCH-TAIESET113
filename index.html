@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>עדכון בד״ח | הטייסת</title>
+<meta name="theme-color" content="#0a0a09">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="בד״ח הטייסת">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <section class="hero">
+    <div class="logo-badge">
+      <img src="icons/logo-source.png" alt="לוגו הטייסת">
+    </div>
+    <div class="eyebrow" style="justify-content:center;">מערכת פנימית · הטייסת</div>
+    <h1>עדכון בד״ח</h1>
+    <p>כל מה שצריך בשביל להטמיע את הבד״ח החדש — המצגת, ההדרכות והמבחנים — במקום אחד, פשוט ונגיש מכל מכשיר.</p>
+  </section>
+
+  <div class="grid">
+
+    <a class="card" href="briefing.html">
+      <span class="hazard-tag" data-n="01"></span>
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M15 3v5h5"/><path d="M8.5 13h7M8.5 16.5h7M8.5 9.5h3"/></svg>
+      </span>
+      <h3>הבד״ח</h3>
+      <p>המצגת המלאה של העדכון, עם כל הקישורים בין הפרקים.</p>
+      <span class="go">פתיחת המצגת ←</span>
+    </a>
+
+    <a class="card" href="trainings.html">
+      <span class="hazard-tag" data-n="02"></span>
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5-6-3.5Z" fill="currentColor" stroke="none"/></svg>
+      </span>
+      <h3>הדרכות</h3>
+      <p>שלושה סרטוני הדרכה: מהות העדכון, בד״ח אדום ובד״ח צהוב.</p>
+      <span class="go">צפייה בהדרכות ←</span>
+    </a>
+
+    <a class="card" href="tests.html">
+      <span class="hazard-tag" data-n="03"></span>
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 11l2 2 4-4"/><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/></svg>
+      </span>
+      <h3>מבחנים</h3>
+      <p>המבחנים הנדרשים לצורך השלמת ההטמעה של הבד״ח.</p>
+      <span class="go">מעבר למבחנים ←</span>
+    </a>
+
+    <a class="card locked" href="notes.html">
+      <span class="hazard-tag" data-n="04"></span>
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+      </span>
+      <h3>הערות ופידבק</h3>
+      <p>מקום לכל מי שנכנס לכתוב הערה או שאלה — רק את/ה רואה מה נכתב.</p>
+      <span class="go">כניסה ←</span>
+    </a>
+
+  </div>
+
+  <footer>
+    <span>עודכן לאחרונה: <span class="mono" id="lastUpdated">—</span></span>
+    <span class="mono">v1.0</span>
+  </footer>
+
+</div>
+<script>
+  document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('he-IL');
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+</script>
+</body>
+</html>

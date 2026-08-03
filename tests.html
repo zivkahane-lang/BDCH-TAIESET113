@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>מבחנים | הטייסת</title>
+<meta name="theme-color" content="#0a0a09">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <img src="icons/logo-source.png" alt="לוגו">
+      עדכון בד״ח
+    </a>
+    <a class="back-link" href="index.html">→ חזרה לדף הבית</a>
+  </div>
+
+  <div class="page-head">
+    <div class="eyebrow">03 · חובה להשלמה</div>
+    <h1 class="title">מבחנים</h1>
+    <div class="bolt-rule"></div>
+    <p class="lead">יש להשלים את המבחנים הבאים לאחר צפייה בהדרכות. כל מבחן נפתח כמסמך גוגל בחלון נפרד.</p>
+  </div>
+
+  <div class="stack">
+
+    <div class="item">
+      <div class="item-head">
+        <h3>מבחן 1 · מהות העדכון</h3>
+        <span class="tag">Google Doc</span>
+      </div>
+      <p>מבחן קצר על העקרונות הכלליים של הבד״ח החדש.</p>
+      <!-- להחלפה: הדביקי כאן את קישור מסמך הגוגל דוקס האמיתי -->
+      <a class="btn outline" href="https://docs.google.com/document/d/REPLACE_ME_1" target="_blank" rel="noopener">↗ פתיחת המבחן</a>
+    </div>
+
+    <div class="item">
+      <div class="item-head">
+        <h3>מבחן 2 · בד״ח אדום</h3>
+        <span class="tag red">Google Doc</span>
+      </div>
+      <p>מבחן על התוכן הספציפי של פרק הבד״ח האדום.</p>
+      <a class="btn outline" href="https://docs.google.com/document/d/REPLACE_ME_2" target="_blank" rel="noopener">↗ פתיחת המבחן</a>
+    </div>
+
+    <div class="item">
+      <div class="item-head">
+        <h3>מבחן 3 · בד״ח צהוב</h3>
+        <span class="tag yellow">Google Doc</span>
+      </div>
+      <p>מבחן על התוכן הספציפי של פרק הבד״ח הצהוב.</p>
+      <a class="btn outline" href="https://docs.google.com/document/d/REPLACE_ME_3" target="_blank" rel="noopener">↗ פתיחת המבחן</a>
+    </div>
+
+    <div class="note-box">
+      <b>הערה טכנית:</b> החליפי את הכתובות <span class="mono">REPLACE_ME_1/2/3</span> בקישורי מסמכי הגוגל דוקס האמיתיים (Share → Anyone with the link → Viewer מספיק לצפייה, או Editor אם רוצים למלא ישירות במסמך).
+    </div>
+  </div>
+
+  <footer>
+    <span>עודכן לאחרונה: <span class="mono" id="lastUpdated">—</span></span>
+    <span class="mono">v1.0</span>
+  </footer>
+</div>
+<script>document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('he-IL');
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }</script>
+</body>
+</html>

@@ -29,23 +29,19 @@
   </div>
 
   <style>
-    .ppt-embed{
+    .pdf-embed{
       position:relative;
       width:100%;
-      aspect-ratio:16/9;
+      height:75vh;
+      min-height:420px;
       border-radius:10px;
       overflow:hidden;
       border:1px solid var(--line);
-      background:#000;
+      background:#1a1a1a;
       margin-bottom:16px;
     }
-    .ppt-embed iframe{
+    .pdf-embed iframe{
       width:100%; height:100%; border:0; display:block;
-    }
-    .ppt-fallback{
-      position:absolute; inset:0;
-      display:flex; align-items:center; justify-content:center;
-      color:var(--muted); font-size:13.5px; text-align:center; padding:20px;
     }
   </style>
 
@@ -53,24 +49,22 @@
     <div class="item">
       <div class="item-head">
         <h3>מצגת הבד״ח המלאה</h3>
-        <span class="tag yellow">PPTX</span>
+        <span class="tag yellow">PDF</span>
       </div>
-      <p>הקובץ המלא, כולל קישורים בין הפרקים השונים. הצפייה כאן היא תצוגה חיה של הקובץ - אין צורך להוריד אותו.</p>
+      <p>הקובץ המלא, כולל קישורים בין הפרקים השונים. הצפייה כאן נטענת ישירות בדף, בלי תלות בשירות חיצוני.</p>
 
-      <div class="ppt-embed">
-        <div class="ppt-fallback" id="pptFallback">טוען את המצגת…</div>
-        <iframe id="pptFrame" allowfullscreen style="display:none;"></iframe>
+      <div class="pdf-embed">
+        <!-- להחלפה: ודאי שהקובץ נקרא בדיוק bdch.pdf ויושב בתוך תיקיית assets -->
+        <iframe src="assets/bdch.pdf" title="מצגת הבד״ח"></iframe>
       </div>
 
-      <!-- להחלפה: עדכני את הקישור לכתובת האמיתית של קובץ ה-PPTX (למשל קישור לגוגל דרייב, או קובץ שהעליתם ל-assets/) -->
-      <a class="btn outline" href="assets/bdch.pptx" target="_blank" rel="noopener">↓ הורדת הקובץ למחשב / טלפון</a>
+      <a class="btn outline" href="assets/bdch.pdf" target="_blank" rel="noopener">↓ פתיחת הקובץ בכרטיסייה נפרדת / הורדה</a>
     </div>
 
     <div class="note-box">
-      <b>הערה טכנית:</b> כרגע הכפתור והתצוגה מצביעים לקובץ בתיקייה <span class="mono">assets/bdch.pptx</span>.
-      כדי לחבר את המצגת האמיתית, יש שתי אפשרויות: (1) להעלות את קובץ ה-PPTX לתיקיית <span class="mono">assets</span> באתר (בשם המדויק <span class="mono">bdch.pptx</span>), או (2) להחליף את הקישור בכתובת של קובץ ששמור בגוגל דרייב / OneDrive עם הרשאת צפייה.
+      <b>הערה טכנית:</b> יש לשמור את המצגת כקובץ PDF (מתוך PowerPoint: File → Save As → PDF, לא "מזערי לצפייה בלבד" - זה שומר גם על הקישורים הפנימיים), ולהעלות אותו לתיקיית <span class="mono">assets</span> בשם המדויק <span class="mono">bdch.pdf</span>.
       <br><br>
-      התצוגה בתוך הדף פועלת דרך שירות חיצוני של מיקרוסופט (Office Online) - היא דורשת שהקובץ יהיה נגיש באינטרנט הרגיל. אם הצפייה לא נטענת (למשל ברשת פנימית חסומה), כפתור ההורדה תמיד עובד כגיבוי.
+      אם היה קובץ <span class="mono">bdch.pptx</span> קודם - אין צורך למחוק אותו, פשוט הדף הזה כבר לא מצביע אליו.
     </div>
   </div>
 
@@ -80,23 +74,6 @@
   </footer>
 </div>
 <script>document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('he-IL');
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
-
-(function(){
-  const pptUrl = new URL('assets/bdch.pptx', window.location.href).href;
-  const frame = document.getElementById('pptFrame');
-  const fallback = document.getElementById('pptFallback');
-  frame.src = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(pptUrl);
-  frame.addEventListener('load', () => {
-    frame.style.display = 'block';
-    fallback.style.display = 'none';
-  });
-  // אם התצוגה לא נטענת תוך זמן סביר (למשל חסימת רשת), משאירים את הודעת הטעינה עם הכוונה לכפתור ההורדה
-  setTimeout(() => {
-    if (frame.style.display === 'none') {
-      fallback.textContent = 'התצוגה לא נטענה - ייתכן שהרשת חוסמת שירותים חיצוניים. אפשר להוריד את הקובץ בכפתור למטה.';
-    }
-  }, 6000);
-})();</script>
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }</script>
 </body>
 </html>

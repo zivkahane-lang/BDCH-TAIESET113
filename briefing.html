@@ -94,7 +94,7 @@ const loadingMsg = document.getElementById('loadingMsg');
 const pageCountEl = document.getElementById('pageCount');
 
 function slideUrl(i){
-  return 'assets/slides/slide-' + String(i+1).padStart(3,'0') + '.jpg';
+  return 'slide-' + String(i+1).padStart(3,'0') + '.jpg';
 }
 
 function positionHotspots(){
@@ -166,7 +166,7 @@ window.addEventListener('popstate', e => {
 
 window.addEventListener('resize', positionHotspots);
 
-fetch('assets/slides-manifest.json').then(r => r.json()).then(data => {
+fetch('slides-manifest.json').then(r => r.json()).then(data => {
   manifest = data;
   const startHash = parseInt((location.hash || '').replace('#s',''), 10);
   const start = (!isNaN(startHash) && startHash >= 1 && startHash <= manifest.pageCount) ? startHash-1 : 0;
@@ -175,7 +175,7 @@ fetch('assets/slides-manifest.json').then(r => r.json()).then(data => {
 }).catch(() => {
   document.getElementById('viewer').innerHTML = `
     <div class="error-box">
-      <div>לא הצלחתי לטעון את הבד״ח כאן.<br>ודאי שתיקיית assets/slides וקובץ assets/slides-manifest.json קיימים.</div>
+      <div>לא הצלחתי לטעון את הבד״ח כאן.<br>ודאי שקבצי slide-XXX.jpg וקובץ slides-manifest.json קיימים בשורש האתר.</div>
     </div>`;
 });
 </script>

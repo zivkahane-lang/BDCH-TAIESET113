@@ -99,8 +99,9 @@ function slideUrl(i){
 
 function positionHotspots(){
   if(!manifest) return;
-  const rect = viewer.getBoundingClientRect();
-  const cw = rect.width, ch = rect.height;
+  const vv = window.visualViewport;
+  const cw = vv ? vv.width : viewer.clientWidth;
+  const ch = vv ? vv.height : viewer.clientHeight;
   const iw = img.naturalWidth, ih = img.naturalHeight;
   if(!iw || !ih) return;
 
@@ -131,23 +132,32 @@ function preloadNeighbors(){
   links.forEach(l => { const im = new Image(); im.src = slideUrl(l.page); });
 }
 
-function showPage(i){
+function showPage(i, attempt){
+  attempt = attempt || 0;
   imgLoading = true;
   const target = new Image();
   target.onload = () => {
     img.src = target.src;
     img.style.display = 'block';
     loadingMsg.style.display = 'none';
-    positionHotspots();
-    preloadNeighbors();
-    imgLoading = false;
+    // מחכים לשני פריימים כדי שהדפדפן יסיים ליישב את הפריסה (בעיקר בטלפון)
+    // לפני שמודדים מיקומים - זה מונע חוסר-דיוק שמתגלה רק אחרי זום
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      positionHotspots();
+      preloadNeighbors();
+      imgLoading = false;
+    }));
   };
   target.onerror = () => {
-    imgLoading = false;
-    loadingMsg.style.display = 'flex';
-    loadingMsg.textContent = 'שגיאה בטעינת השקף.';
+    if(attempt < 3){
+      setTimeout(() => showPage(i, attempt+1), 500);
+    } else {
+      imgLoading = false;
+      loadingMsg.style.display = 'flex';
+      loadingMsg.textContent = 'שגיאה בטעינת השקף.';
+    }
   };
-  target.src = slideUrl(i);
+  target.src = slideUrl(i) + (attempt ? ('?r=' + attempt) : '');
   pageCountEl.textContent = (i+1) + ' / ' + manifest.pageCount;
 }
 
@@ -165,19 +175,35 @@ window.addEventListener('popstate', e => {
 });
 
 window.addEventListener('resize', positionHotspots);
+window.addEventListener('orientationchange', () => setTimeout(positionHotspots, 300));
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', positionHotspots);
+  window.visualViewport.addEventListener('scroll', positionHotspots);
+}
 
-fetch('slides-manifest.json').then(r => r.json()).then(data => {
-  manifest = data;
-  const startHash = parseInt((location.hash || '').replace('#s',''), 10);
-  const start = (!isNaN(startHash) && startHash >= 1 && startHash <= manifest.pageCount) ? startHash-1 : 0;
-  history.replaceState({ page: start }, '', location.pathname);
-  goToPage(start, false);
-}).catch(() => {
-  document.getElementById('viewer').innerHTML = `
-    <div class="error-box">
-      <div>לא הצלחתי לטעון את הבד״ח כאן.<br>ודאי שקבצי slide-XXX.jpg וקובץ slides-manifest.json קיימים בשורש האתר.</div>
-    </div>`;
-});
+function loadManifest(attempt){
+  fetch('slides-manifest.json', { cache: 'no-store' }).then(r => {
+    if(!r.ok) throw new Error('bad status');
+    return r.json();
+  }).then(data => {
+    manifest = data;
+    const startHash = parseInt((location.hash || '').replace('#s',''), 10);
+    const start = (!isNaN(startHash) && startHash >= 1 && startHash <= manifest.pageCount) ? startHash-1 : 0;
+    history.replaceState({ page: start }, '', location.pathname);
+    goToPage(start, false);
+  }).catch(() => {
+    if(attempt < 4){
+      setTimeout(() => loadManifest(attempt+1), 700);
+    } else {
+      document.getElementById('viewer').innerHTML = `
+        <div class="error-box">
+          <div>לא הצלחתי לטעון את הבד״ח כאן.<br>ודאי שקבצי slide-XXX.jpg וקובץ slides-manifest.json קיימים בשורש האתר.</div>
+          <a class="hud-btn" href="javascript:location.reload()">ניסיון נוסף</a>
+        </div>`;
+    }
+  });
+}
+loadManifest(0);
 </script>
 </body>
 </html>

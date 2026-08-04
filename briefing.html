@@ -2,78 +2,182 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>הבד״ח | הטייסת</title>
-<meta name="theme-color" content="#0a0a09">
+<meta name="theme-color" content="#100f0d">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/favicon-32.png">
-<link rel="stylesheet" href="style.css">
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html, body{ height:100%; background:#100f0d; overflow:hidden; overscroll-behavior:none; }
+  body{ font-family:'Segoe UI', Arial, sans-serif; }
+
+  #viewer{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background:#100f0d;
+  }
+  #pdfCanvas{ max-width:100%; max-height:100%; box-shadow:0 20px 60px rgba(0,0,0,.6); display:none; }
+
+  .tap-zone{ position:fixed; top:0; bottom:0; width:32%; z-index:5; cursor:pointer; }
+  .tap-zone.zleft{ left:0; }
+  .tap-zone.zright{ right:0; }
+
+  .hud{
+    position:fixed; top:0; left:0; right:0;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 18px; z-index:10; pointer-events:none;
+  }
+  .hud > *{ pointer-events:auto; }
+  .hud-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(16,15,13,0.7);
+    border:1px solid rgba(207,165,58,0.28);
+    color:#ece8db; font-size:13px; font-weight:600;
+    padding:9px 16px; border-radius:999px; backdrop-filter:blur(6px);
+    text-decoration:none;
+  }
+  .page-count{
+    background:rgba(16,15,13,0.7);
+    border:1px solid rgba(207,165,58,0.28);
+    color:#cfa53a; font-family:'Courier New',monospace; font-size:12.5px; font-weight:700;
+    padding:9px 16px; border-radius:999px; backdrop-filter:blur(6px);
+  }
+
+  .nav-arrows{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    display:flex; gap:16px; z-index:10; direction:ltr;
+  }
+  .nav-arrows button{
+    width:48px; height:48px; border-radius:50%;
+    background:rgba(16,15,13,0.78); border:1px solid rgba(207,165,58,0.3);
+    color:#cfa53a; font-size:20px; cursor:pointer;
+  }
+  .nav-arrows button:disabled{ opacity:.3; cursor:default; }
+
+  .loading, .error-box{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; color:#8c8672; font-size:14px; text-align:center; padding:30px; z-index:20;
+    background:#100f0d;
+  }
+  .error-box{ color:#ece8db; }
+</style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="topbar">
-    <a class="brand" href="index.html">
-      <img src="icons/logo-source.png" alt="לוגו" onerror="this.style.display='none'">
-      עדכון בד״ח
-    </a>
-    <a class="back-link" href="index.html">→ חזרה לדף הבית</a>
-  </div>
-
-  <div class="page-head">
-    <div class="eyebrow">01 · חומר עיקרי</div>
-    <h1 class="title">הבד״ח</h1>
-    <div class="bolt-rule"></div>
-    <p class="lead">המצגת המלאה של הבד״ח החדש. המצגת כוללת קישורים פנימיים בין הפרקים — מומלץ לפתוח אותה במצב מצגת (Slide Show) לניווט הנוח ביותר.</p>
-  </div>
-
-  <style>
-    .pdf-embed{
-      position:relative;
-      width:100%;
-      height:75vh;
-      min-height:420px;
-      border-radius:10px;
-      overflow:hidden;
-      border:1px solid var(--line);
-      background:#1a1a1a;
-      margin-bottom:16px;
-    }
-    .pdf-embed iframe{
-      width:100%; height:100%; border:0; display:block;
-    }
-  </style>
-
-  <div class="stack">
-    <div class="item">
-      <div class="item-head">
-        <h3>מצגת הבד״ח המלאה</h3>
-        <span class="tag yellow">PDF</span>
-      </div>
-      <p>הקובץ המלא, כולל קישורים בין הפרקים השונים. הצפייה כאן נטענת ישירות בדף, בלי תלות בשירות חיצוני.</p>
-
-      <div class="pdf-embed">
-        <!-- להחלפה: ודאי שהקובץ נקרא בדיוק bdch.pdf ויושב בתוך תיקיית assets -->
-        <iframe src="assets/bdch.pdf" title="מצגת הבד״ח"></iframe>
-      </div>
-
-      <a class="btn outline" href="assets/bdch.pdf" target="_blank" rel="noopener">↓ פתיחת הקובץ בכרטיסייה נפרדת / הורדה</a>
-    </div>
-
-    <div class="note-box">
-      <b>הערה טכנית:</b> יש לשמור את המצגת כקובץ PDF (מתוך PowerPoint: File → Save As → PDF, לא "מזערי לצפייה בלבד" - זה שומר גם על הקישורים הפנימיים), ולהעלות אותו לתיקיית <span class="mono">assets</span> בשם המדויק <span class="mono">bdch.pdf</span>.
-      <br><br>
-      אם היה קובץ <span class="mono">bdch.pptx</span> קודם - אין צורך למחוק אותו, פשוט הדף הזה כבר לא מצביע אליו.
-    </div>
-  </div>
-
-  <footer>
-    <span>עודכן לאחרונה: <span class="mono" id="lastUpdated">—</span></span>
-    <span class="mono">v1.0</span>
-  </footer>
+<div class="hud">
+  <a class="hud-btn" href="index.html">→ חזרה</a>
+  <span class="page-count" id="pageCount">—</span>
 </div>
-<script>document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('he-IL');
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }</script>
+
+<div id="viewer">
+  <div class="loading" id="loadingMsg">טוענת את המצגת…</div>
+  <canvas id="pdfCanvas"></canvas>
+</div>
+
+<div class="tap-zone zleft" id="zoneLeft" aria-label="הקודם"></div>
+<div class="tap-zone zright" id="zoneRight" aria-label="הבא"></div>
+
+<div class="nav-arrows">
+  <button id="prevBtn" aria-label="הקודם">◀</button>
+  <button id="nextBtn" aria-label="הבא">▶</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+/* ============================================================
+   הצג את המצגת:
+   יש לשמור את קובץ ה-PPTX כ-PDF ולהעלות אותו לתיקיית assets
+   בשם המדויק: bdch.pdf
+   ============================================================ */
+const PDF_URL = 'assets/bdch.pdf';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let pdfDoc = null;
+let pageNum = 1;
+let rendering = false;
+let pendingPage = null;
+
+const canvas = document.getElementById('pdfCanvas');
+const ctx = canvas.getContext('2d');
+const loadingMsg = document.getElementById('loadingMsg');
+const pageCountEl = document.getElementById('pageCount');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+function updateButtons(){
+  prevBtn.disabled = pageNum <= 1;
+  nextBtn.disabled = pageNum >= pdfDoc.numPages;
+}
+
+function renderPage(num){
+  rendering = true;
+  pdfDoc.getPage(num).then(page => {
+    const base = page.getViewport({ scale: 1 });
+    const dpr = window.devicePixelRatio || 1;
+    const scale = Math.min(window.innerWidth / base.width, window.innerHeight / base.height) * dpr;
+    const viewport = page.getViewport({ scale });
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    canvas.style.width = (viewport.width / dpr) + 'px';
+    canvas.style.height = (viewport.height / dpr) + 'px';
+
+    page.render({ canvasContext: ctx, viewport }).promise.then(() => {
+      rendering = false;
+      canvas.style.display = 'block';
+      loadingMsg.style.display = 'none';
+      if(pendingPage !== null){ const p = pendingPage; pendingPage = null; renderPage(p); }
+    });
+  });
+  pageCountEl.textContent = num + ' / ' + pdfDoc.numPages;
+  updateButtons();
+}
+
+function queueRender(num){ if(rendering){ pendingPage = num; } else { renderPage(num); } }
+
+function goTo(delta){
+  if(!pdfDoc) return;
+  const next = pageNum + delta;
+  if(next < 1 || next > pdfDoc.numPages) return;
+  pageNum = next;
+  queueRender(pageNum);
+}
+
+pdfjsLib.getDocument(PDF_URL).promise.then(doc => {
+  pdfDoc = doc;
+  renderPage(pageNum);
+}).catch(() => {
+  document.getElementById('viewer').innerHTML = `
+    <div class="error-box">
+      <div>לא הצלחתי לטעון את המצגת כאן.<br>ודאי שקובץ bdch.pdf קיים בתיקיית assets.</div>
+      <a class="hud-btn" href="${PDF_URL}" target="_blank" rel="noopener">פתיחת הקובץ ישירות ↗</a>
+    </div>`;
+});
+
+prevBtn.addEventListener('click', () => goTo(-1));
+nextBtn.addEventListener('click', () => goTo(1));
+document.getElementById('zoneLeft').addEventListener('click', () => goTo(-1));
+document.getElementById('zoneRight').addEventListener('click', () => goTo(1));
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight') goTo(-1); // בעברית: חץ ימני = הקודם
+  if(e.key === 'ArrowLeft') goTo(1);   // חץ שמאלי = הבא
+});
+
+window.addEventListener('resize', () => { if(pdfDoc) queueRender(pageNum); });
+
+let touchStartX = null;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive:true });
+document.addEventListener('touchend', e => {
+  if(touchStartX === null) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if(Math.abs(dx) > 50){ dx > 0 ? goTo(-1) : goTo(1); }
+  touchStartX = null;
+}, { passive:true });
+</script>
 </body>
 </html>

@@ -79,29 +79,23 @@ a{color:inherit; text-decoration:none;}
 }
 .back-link:hover{ color:var(--black); background:var(--yellow); border-color:var(--yellow); }
 
-/* ---------- hazard corner tag ---------- */
+/* ---------- corner badge (refined, replaces old hazard stripe) ---------- */
 .hazard-tag{
   position:absolute;
-  top:0; right:0;
-  width:64px; height:64px;
-  overflow:hidden;
-  border-top-right-radius:var(--radius);
+  top:16px; left:16px;
+  width:30px; height:30px;
+  border-radius:8px;
+  background:rgba(207,165,58,0.10);
+  border:1px solid rgba(207,165,58,0.28);
+  display:flex; align-items:center; justify-content:center;
 }
 .hazard-tag::before{
   content:attr(data-n);
-  position:absolute;
-  top:10px; right:-22px;
-  width:110px;
-  text-align:center;
-  transform:rotate(45deg);
-  background:repeating-linear-gradient(45deg, var(--yellow) 0 8px, var(--panel-2) 8px 16px);
-  color:var(--black);
   font-family:'JetBrains Mono', monospace;
   font-weight:700;
   font-size:11px;
-  letter-spacing:1px;
-  padding:2px 0;
-  opacity:.9;
+  color:var(--yellow);
+  letter-spacing:.5px;
 }
 
 /* ---------- page header ---------- */

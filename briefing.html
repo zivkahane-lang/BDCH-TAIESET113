@@ -2,241 +2,69 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>הבד״ח | הטייסת</title>
 <meta name="theme-color" content="#100f0d">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/favicon-32.png">
 <style>
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  html, body{ height:100%; background:#100f0d; overflow:hidden; overscroll-behavior:none; }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html, body{ height:100%; background:#100f0d; overflow:hidden; }
   body{ font-family:'Segoe UI', Arial, sans-serif; }
 
-  #viewer{
+  #pdfFrame{
     position:fixed; inset:0;
-    display:flex; align-items:center; justify-content:center;
+    width:100%; height:100%;
+    border:0; display:block;
     background:#100f0d;
   }
-  #pageWrap{ position:relative; z-index:6; display:none; }
-  #pdfCanvas{ display:block; box-shadow:0 20px 60px rgba(0,0,0,.6); }
-  #annotationLayer{ position:absolute; inset:0; pointer-events:none; }
-  #annotationLayer a{ position:absolute; display:block; pointer-events:auto; cursor:pointer; }
-
-  .tap-zone{ position:fixed; top:0; bottom:0; width:32%; z-index:5; cursor:pointer; }
-  .tap-zone.zleft{ left:0; }
-  .tap-zone.zright{ right:0; }
 
   .hud{
-    position:fixed; top:0; left:0; right:0;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:16px 18px; z-index:10; pointer-events:none;
+    position:fixed; top:0; right:0; z-index:10;
+    padding:14px 16px;
   }
-  .hud > *{ pointer-events:auto; }
   .hud-btn{
     display:inline-flex; align-items:center; gap:6px;
-    background:rgba(16,15,13,0.7);
-    border:1px solid rgba(207,165,58,0.28);
+    background:rgba(16,15,13,0.75);
+    border:1px solid rgba(207,165,58,0.3);
     color:#ece8db; font-size:13px; font-weight:600;
     padding:9px 16px; border-radius:999px; backdrop-filter:blur(6px);
     text-decoration:none;
   }
-  .page-count{
-    background:rgba(16,15,13,0.7);
-    border:1px solid rgba(207,165,58,0.28);
-    color:#cfa53a; font-family:'Courier New',monospace; font-size:12.5px; font-weight:700;
-    padding:9px 16px; border-radius:999px; backdrop-filter:blur(6px);
-  }
 
-  .nav-arrows{
-    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
-    display:flex; gap:16px; z-index:10; direction:ltr;
+  .fallback{
+    position:fixed; inset:0; display:none;
+    flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; color:#ece8db; text-align:center; padding:30px; z-index:1;
   }
-  .nav-arrows button{
-    width:48px; height:48px; border-radius:50%;
-    background:rgba(16,15,13,0.78); border:1px solid rgba(207,165,58,0.3);
-    color:#cfa53a; font-size:20px; cursor:pointer;
-  }
-  .nav-arrows button:disabled{ opacity:.3; cursor:default; }
-
-  .loading, .error-box{
-    position:fixed; inset:0;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:16px; color:#8c8672; font-size:14px; text-align:center; padding:30px; z-index:20;
-    background:#100f0d;
-  }
-  .error-box{ color:#ece8db; }
 </style>
 </head>
 <body>
 
-<div class="hud">
-  <a class="hud-btn" href="index.html">→ חזרה</a>
-  <span class="page-count" id="pageCount">—</span>
+<div class="hud"><a class="hud-btn" href="index.html">→ חזרה</a></div>
+
+<!--
+  ============================================================
+  הצג את המצגת:
+  יש לשמור את קובץ ה-PPTX כ-PDF ולהעלות אותו לתיקיית assets
+  בשם המדויק: bdch.pdf
+
+  #toolbar=0&navpanes=0&view=FitH הן הוראות פתיחה שהדפדפן
+  (בעיקר Chrome/Edge) מכבד: מסתיר סרגלי כלים ומתאים לרוחב המסך.
+  לא כל הדפדפנים תומכים בפרמטרים האלו (בעיקר בטלפון), אבל זה
+  לא פוגע בתפקוד - רק לא תמיד מסתיר את הסרגל.
+  ============================================================
+-->
+<iframe id="pdfFrame"
+  src="assets/bdch.pdf#toolbar=0&navpanes=0&view=FitH"
+  title="מצגת הבד״ח">
+</iframe>
+
+<div class="fallback" id="fallback">
+  <div>לא הצלחתי לטעון את המצגת כאן.<br>ודאי שקובץ bdch.pdf קיים בתיקיית assets.</div>
+  <a class="hud-btn" href="assets/bdch.pdf" target="_blank" rel="noopener">פתיחת הקובץ ישירות ↗</a>
 </div>
 
-<div id="viewer">
-  <div class="loading" id="loadingMsg">טוענת את המצגת…</div>
-  <div id="pageWrap">
-    <canvas id="pdfCanvas"></canvas>
-    <div id="annotationLayer"></div>
-  </div>
-</div>
-
-<div class="tap-zone zleft" id="zoneLeft" aria-label="הקודם"></div>
-<div class="tap-zone zright" id="zoneRight" aria-label="הבא"></div>
-
-<div class="nav-arrows">
-  <button id="prevBtn" aria-label="הקודם">◀</button>
-  <button id="nextBtn" aria-label="הבא">▶</button>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-<script>
-/* ============================================================
-   הצג את המצגת:
-   יש לשמור את קובץ ה-PPTX כ-PDF ולהעלות אותו לתיקיית assets
-   בשם המדויק: bdch.pdf
-   ============================================================ */
-const PDF_URL = 'assets/bdch.pdf';
-const PDFJS_BASE = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + 'build/pdf.worker.min.js';
-
-let pdfDoc = null;
-let pageNum = 1;
-let rendering = false;
-let pendingPage = null;
-
-const canvas = document.getElementById('pdfCanvas');
-const ctx = canvas.getContext('2d');
-const pageWrap = document.getElementById('pageWrap');
-const annotationLayer = document.getElementById('annotationLayer');
-const loadingMsg = document.getElementById('loadingMsg');
-const pageCountEl = document.getElementById('pageCount');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-
-function updateButtons(){
-  prevBtn.disabled = pageNum <= 1;
-  nextBtn.disabled = pageNum >= pdfDoc.numPages;
-}
-
-function renderLinks(page, viewportCss){
-  annotationLayer.innerHTML = '';
-  page.getAnnotations().then(annots => {
-    annots.forEach(ann => {
-      if(ann.subtype !== 'Link') return;
-      const rect = pdfjsLib.Util.normalizeRect(ann.rect);
-      const p1 = viewportCss.convertToViewportPoint(rect[0], rect[1]);
-      const p2 = viewportCss.convertToViewportPoint(rect[2], rect[3]);
-      const left = Math.min(p1[0], p2[0]);
-      const top = Math.min(p1[1], p2[1]);
-      const width = Math.abs(p2[0] - p1[0]);
-      const height = Math.abs(p2[1] - p1[1]);
-
-      const a = document.createElement('a');
-      a.style.left = left + 'px';
-      a.style.top = top + 'px';
-      a.style.width = width + 'px';
-      a.style.height = height + 'px';
-
-      if(ann.url){
-        a.href = ann.url;
-        a.target = '_blank';
-        a.rel = 'noopener';
-      } else if(ann.dest){
-        a.href = '#';
-        a.addEventListener('click', async e => {
-          e.preventDefault();
-          let dest = ann.dest;
-          if(typeof dest === 'string'){ dest = await pdfDoc.getDestination(dest); }
-          if(dest){
-            const idx = await pdfDoc.getPageIndex(dest[0]);
-            pageNum = idx + 1;
-            queueRender(pageNum);
-          }
-        });
-      }
-      annotationLayer.appendChild(a);
-    });
-  });
-}
-
-function renderPage(num){
-  rendering = true;
-  pdfDoc.getPage(num).then(page => {
-    const base = page.getViewport({ scale: 1 });
-    const dpr = window.devicePixelRatio || 1;
-    const cssScale = Math.min(window.innerWidth / base.width, window.innerHeight / base.height);
-    const viewportCss = page.getViewport({ scale: cssScale });
-    const viewportPx = page.getViewport({ scale: cssScale * dpr });
-
-    canvas.width = viewportPx.width;
-    canvas.height = viewportPx.height;
-    canvas.style.width = viewportCss.width + 'px';
-    canvas.style.height = viewportCss.height + 'px';
-    pageWrap.style.width = viewportCss.width + 'px';
-    pageWrap.style.height = viewportCss.height + 'px';
-
-    page.render({ canvasContext: ctx, viewport: viewportPx }).promise.then(() => {
-      rendering = false;
-      pageWrap.style.display = 'block';
-      loadingMsg.style.display = 'none';
-      renderLinks(page, viewportCss);
-      if(pendingPage !== null){ const p = pendingPage; pendingPage = null; renderPage(p); }
-    });
-  });
-  pageCountEl.textContent = num + ' / ' + pdfDoc.numPages;
-  updateButtons();
-}
-
-function queueRender(num){ if(rendering){ pendingPage = num; } else { renderPage(num); } }
-
-function goTo(delta){
-  if(!pdfDoc) return;
-  const next = pageNum + delta;
-  if(next < 1 || next > pdfDoc.numPages) return;
-  pageNum = next;
-  queueRender(pageNum);
-}
-
-pdfjsLib.getDocument({
-  url: PDF_URL,
-  cMapUrl: PDFJS_BASE + 'cmaps/',
-  cMapPacked: true,
-  standardFontDataUrl: PDFJS_BASE + 'standard_fonts/'
-}).promise.then(doc => {
-  pdfDoc = doc;
-  renderPage(pageNum);
-}).catch(() => {
-  document.getElementById('viewer').innerHTML = `
-    <div class="error-box">
-      <div>לא הצלחתי לטעון את המצגת כאן.<br>ודאי שקובץ bdch.pdf קיים בתיקיית assets.</div>
-      <a class="hud-btn" href="${PDF_URL}" target="_blank" rel="noopener">פתיחת הקובץ ישירות ↗</a>
-    </div>`;
-});
-
-prevBtn.addEventListener('click', () => goTo(-1));
-nextBtn.addEventListener('click', () => goTo(1));
-document.getElementById('zoneLeft').addEventListener('click', () => goTo(-1));
-document.getElementById('zoneRight').addEventListener('click', () => goTo(1));
-
-document.addEventListener('keydown', e => {
-  if(e.key === 'ArrowRight') goTo(-1); // בעברית: חץ ימני = הקודם
-  if(e.key === 'ArrowLeft') goTo(1);   // חץ שמאלי = הבא
-});
-
-window.addEventListener('resize', () => { if(pdfDoc) queueRender(pageNum); });
-
-let touchStartX = null;
-document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive:true });
-document.addEventListener('touchend', e => {
-  if(touchStartX === null) return;
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  if(Math.abs(dx) > 50){ dx > 0 ? goTo(-1) : goTo(1); }
-  touchStartX = null;
-}, { passive:true });
-</script>
 </body>
 </html>

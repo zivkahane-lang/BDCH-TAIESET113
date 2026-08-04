@@ -18,7 +18,10 @@
     display:flex; align-items:center; justify-content:center;
     background:#100f0d;
   }
-  #pdfCanvas{ max-width:100%; max-height:100%; box-shadow:0 20px 60px rgba(0,0,0,.6); display:none; }
+  #pageWrap{ position:relative; z-index:6; display:none; }
+  #pdfCanvas{ display:block; box-shadow:0 20px 60px rgba(0,0,0,.6); }
+  #annotationLayer{ position:absolute; inset:0; pointer-events:none; }
+  #annotationLayer a{ position:absolute; display:block; pointer-events:auto; cursor:pointer; }
 
   .tap-zone{ position:fixed; top:0; bottom:0; width:32%; z-index:5; cursor:pointer; }
   .tap-zone.zleft{ left:0; }
@@ -74,7 +77,10 @@
 
 <div id="viewer">
   <div class="loading" id="loadingMsg">טוענת את המצגת…</div>
-  <canvas id="pdfCanvas"></canvas>
+  <div id="pageWrap">
+    <canvas id="pdfCanvas"></canvas>
+    <div id="annotationLayer"></div>
+  </div>
 </div>
 
 <div class="tap-zone zleft" id="zoneLeft" aria-label="הקודם"></div>
@@ -85,7 +91,7 @@
   <button id="nextBtn" aria-label="הבא">▶</button>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 /* ============================================================
    הצג את המצגת:
@@ -93,8 +99,9 @@
    בשם המדויק: bdch.pdf
    ============================================================ */
 const PDF_URL = 'assets/bdch.pdf';
+const PDFJS_BASE = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + 'build/pdf.worker.min.js';
 
 let pdfDoc = null;
 let pageNum = 1;
@@ -103,6 +110,8 @@ let pendingPage = null;
 
 const canvas = document.getElementById('pdfCanvas');
 const ctx = canvas.getContext('2d');
+const pageWrap = document.getElementById('pageWrap');
+const annotationLayer = document.getElementById('annotationLayer');
 const loadingMsg = document.getElementById('loadingMsg');
 const pageCountEl = document.getElementById('pageCount');
 const prevBtn = document.getElementById('prevBtn');
@@ -113,23 +122,68 @@ function updateButtons(){
   nextBtn.disabled = pageNum >= pdfDoc.numPages;
 }
 
+function renderLinks(page, viewportCss){
+  annotationLayer.innerHTML = '';
+  page.getAnnotations().then(annots => {
+    annots.forEach(ann => {
+      if(ann.subtype !== 'Link') return;
+      const rect = pdfjsLib.Util.normalizeRect(ann.rect);
+      const p1 = viewportCss.convertToViewportPoint(rect[0], rect[1]);
+      const p2 = viewportCss.convertToViewportPoint(rect[2], rect[3]);
+      const left = Math.min(p1[0], p2[0]);
+      const top = Math.min(p1[1], p2[1]);
+      const width = Math.abs(p2[0] - p1[0]);
+      const height = Math.abs(p2[1] - p1[1]);
+
+      const a = document.createElement('a');
+      a.style.left = left + 'px';
+      a.style.top = top + 'px';
+      a.style.width = width + 'px';
+      a.style.height = height + 'px';
+
+      if(ann.url){
+        a.href = ann.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+      } else if(ann.dest){
+        a.href = '#';
+        a.addEventListener('click', async e => {
+          e.preventDefault();
+          let dest = ann.dest;
+          if(typeof dest === 'string'){ dest = await pdfDoc.getDestination(dest); }
+          if(dest){
+            const idx = await pdfDoc.getPageIndex(dest[0]);
+            pageNum = idx + 1;
+            queueRender(pageNum);
+          }
+        });
+      }
+      annotationLayer.appendChild(a);
+    });
+  });
+}
+
 function renderPage(num){
   rendering = true;
   pdfDoc.getPage(num).then(page => {
     const base = page.getViewport({ scale: 1 });
     const dpr = window.devicePixelRatio || 1;
-    const scale = Math.min(window.innerWidth / base.width, window.innerHeight / base.height) * dpr;
-    const viewport = page.getViewport({ scale });
+    const cssScale = Math.min(window.innerWidth / base.width, window.innerHeight / base.height);
+    const viewportCss = page.getViewport({ scale: cssScale });
+    const viewportPx = page.getViewport({ scale: cssScale * dpr });
 
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    canvas.style.width = (viewport.width / dpr) + 'px';
-    canvas.style.height = (viewport.height / dpr) + 'px';
+    canvas.width = viewportPx.width;
+    canvas.height = viewportPx.height;
+    canvas.style.width = viewportCss.width + 'px';
+    canvas.style.height = viewportCss.height + 'px';
+    pageWrap.style.width = viewportCss.width + 'px';
+    pageWrap.style.height = viewportCss.height + 'px';
 
-    page.render({ canvasContext: ctx, viewport }).promise.then(() => {
+    page.render({ canvasContext: ctx, viewport: viewportPx }).promise.then(() => {
       rendering = false;
-      canvas.style.display = 'block';
+      pageWrap.style.display = 'block';
       loadingMsg.style.display = 'none';
+      renderLinks(page, viewportCss);
       if(pendingPage !== null){ const p = pendingPage; pendingPage = null; renderPage(p); }
     });
   });
@@ -147,7 +201,12 @@ function goTo(delta){
   queueRender(pageNum);
 }
 
-pdfjsLib.getDocument(PDF_URL).promise.then(doc => {
+pdfjsLib.getDocument({
+  url: PDF_URL,
+  cMapUrl: PDFJS_BASE + 'cmaps/',
+  cMapPacked: true,
+  standardFontDataUrl: PDFJS_BASE + 'standard_fonts/'
+}).promise.then(doc => {
   pdfDoc = doc;
   renderPage(pageNum);
 }).catch(() => {

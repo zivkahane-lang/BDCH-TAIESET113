@@ -10,7 +10,7 @@
 <link rel="icon" href="icons/favicon-32.png">
 <style>
   *{ box-sizing:border-box; margin:0; padding:0; }
-  html, body{ height:100%; background:#100f0d; overflow:hidden; overscroll-behavior:none; }
+  html, body{ height:100%; background:#100f0d; overflow:hidden; overscroll-behavior:none; touch-action:manipulation; }
   body{ font-family:'Segoe UI', Arial, sans-serif; }
 
   #viewer{
@@ -18,19 +18,15 @@
     display:flex; align-items:center; justify-content:center;
     background:#100f0d;
   }
-  #slideImg{
-    max-width:100%; max-height:100%;
-    display:block;
-    user-select:none;
-    -webkit-user-drag:none;
-  }
-  #hotLayer{ position:fixed; inset:0; z-index:6; pointer-events:none; }
+  #pageWrap{ position:relative; z-index:6; display:none; }
+  #pdfCanvasImg{ display:block; box-shadow:0 20px 60px rgba(0,0,0,.6); }
+  #hotLayer{ position:absolute; inset:0; }
   #hotLayer .hot{
     position:absolute;
-    pointer-events:auto;
     cursor:pointer;
-    /* להסרת ההערה למטה ניתן לראות את אזורי הלחיצה בזמן בדיקה */
-    /* background: rgba(0,255,0,0.15); border:1px solid lime; */
+    touch-action:manipulation;
+    /* לבדיקה: אפשר לבטל את ההערה בשורה הבאה כדי לראות את אזורי הלחיצה */
+    /* background: rgba(0,255,0,0.18); outline:1px solid lime; */
   }
 
   .hud{
@@ -74,23 +70,26 @@
 
 <div id="viewer">
   <div class="loading" id="loadingMsg">טוענת את הבד״ח…</div>
-  <img id="slideImg" style="display:none;" alt="שקף">
+  <div id="pageWrap">
+    <img id="pdfCanvasImg" alt="שקף">
+    <div id="hotLayer"></div>
+  </div>
 </div>
-<div id="hotLayer"></div>
 
 <script>
 /* ============================================================
-   קבצי הצג נוצרים אוטומטית מתוך ה-PDF:
-   assets/slides/slide-001.jpg עד assets/slides/slide-NNN.jpg
-   assets/slides-manifest.json - מיקום מדויק של כל קישור בכל עמוד
+   קבצים נדרשים בשורש האתר:
+   slide-001.jpg עד slide-NNN.jpg
+   slides-manifest.json (מיקומי קישורים + מידות העמוד המקוריות)
    ============================================================ */
 
 let manifest = null;
-let pageNum = 0; // אינדקס מבוסס-0
-let imgLoading = false;
+let pageNum = 0;
+let currentToken = 0; // מונע מצב מרוץ אם עוברים שקף לפני שהקודם סיים להיטען
 
 const viewer = document.getElementById('viewer');
-const img = document.getElementById('slideImg');
+const img = document.getElementById('pdfCanvasImg');
+const pageWrap = document.getElementById('pageWrap');
 const hotLayer = document.getElementById('hotLayer');
 const loadingMsg = document.getElementById('loadingMsg');
 const pageCountEl = document.getElementById('pageCount');
@@ -99,68 +98,80 @@ function slideUrl(i){
   return 'slide-' + String(i+1).padStart(3,'0') + '.jpg';
 }
 
-function positionHotspots(){
-  if(!manifest) return;
+// --- מיקום הקישורים: תלוי רק במידות הקבועות של העמוד (מה-manifest),
+//     לא בטעינת התמונה בפועל - כך שהם פעילים מיידית ---
+function layout(){
   const vv = window.visualViewport;
   const cw = vv ? vv.width : viewer.clientWidth;
   const ch = vv ? vv.height : viewer.clientHeight;
-  const iw = img.naturalWidth, ih = img.naturalHeight;
-  if(!iw || !ih) return;
+  const pr = manifest.pageWidth / manifest.pageHeight;
+  const cr = cw / ch;
+  let dispW, dispH;
+  if(pr > cr){ dispW = cw; dispH = cw / pr; } else { dispH = ch; dispW = ch * pr; }
+  return { dispW, dispH };
+}
 
-  const imgRatio = iw/ih, containerRatio = cw/ch;
-  let dispW, dispH, offX, offY;
-  if(imgRatio > containerRatio){
-    dispW = cw; dispH = cw/imgRatio; offX = 0; offY = (ch-dispH)/2;
-  } else {
-    dispH = ch; dispW = ch*imgRatio; offY = 0; offX = (cw-dispW)/2;
-  }
+function positionHotspots(){
+  if(!manifest) return;
+  const { dispW, dispH } = layout();
+  pageWrap.style.width = dispW + 'px';
+  pageWrap.style.height = dispH + 'px';
 
   hotLayer.innerHTML = '';
   const links = manifest.pages[pageNum].links;
   links.forEach(l => {
     const div = document.createElement('div');
     div.className = 'hot';
-    div.style.left = (offX + l.x*dispW) + 'px';
-    div.style.top = (offY + l.y*dispH) + 'px';
+    div.style.left = (l.x*dispW) + 'px';
+    div.style.top = (l.y*dispH) + 'px';
     div.style.width = (l.w*dispW) + 'px';
     div.style.height = (l.h*dispH) + 'px';
-    div.addEventListener('click', () => goToPage(l.page, true));
+
+    // מגע מהיר: pointerup מגיב מיידית, בלי עיכוב ה-300ms הקלאסי של תגי click בדפדפני מובייל
+    let downX=0, downY=0, moved=false;
+    div.addEventListener('pointerdown', e => { downX=e.clientX; downY=e.clientY; moved=false; });
+    div.addEventListener('pointermove', e => {
+      if(Math.abs(e.clientX-downX) > 10 || Math.abs(e.clientY-downY) > 10) moved = true;
+    });
+    div.addEventListener('pointerup', e => {
+      if(!moved) goToPage(l.page, true);
+    });
+
     hotLayer.appendChild(div);
   });
 }
 
-function preloadNeighbors(){
+function preloadLimited(){
   const links = manifest.pages[pageNum].links;
-  links.forEach(l => { const im = new Image(); im.src = slideUrl(l.page); });
+  const targets = [...new Set(links.map(l => l.page))].slice(0, 6);
+  targets.forEach(p => { const im = new Image(); im.src = slideUrl(p); });
 }
 
-function showPage(i, attempt){
-  attempt = attempt || 0;
-  imgLoading = true;
+function showPage(i){
+  const token = ++currentToken;
+  pageCountEl.textContent = (i+1) + ' / ' + manifest.pageCount;
+
+  // 1) מציגים את מסגרת השקף ומפעילים קישורים מיידית
+  pageWrap.style.display = 'block';
+  loadingMsg.style.display = 'none';
+  positionHotspots();
+
+  // 2) טוענים את התמונה עצמה ברקע ומחליפים כשמוכן (עם ניסיון חוזר אוטומטי)
+  loadImage(i, 0, token);
+  preloadLimited();
+}
+
+function loadImage(i, attempt, token){
   const target = new Image();
   target.onload = () => {
+    if(token !== currentToken) return; // המשתמש כבר עבר לשקף אחר בינתיים
     img.src = target.src;
-    img.style.display = 'block';
-    loadingMsg.style.display = 'none';
-    // מחכים לשני פריימים כדי שהדפדפן יסיים ליישב את הפריסה (בעיקר בטלפון)
-    // לפני שמודדים מיקומים - זה מונע חוסר-דיוק שמתגלה רק אחרי זום
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      positionHotspots();
-      preloadNeighbors();
-      imgLoading = false;
-    }));
   };
   target.onerror = () => {
-    if(attempt < 3){
-      setTimeout(() => showPage(i, attempt+1), 500);
-    } else {
-      imgLoading = false;
-      loadingMsg.style.display = 'flex';
-      loadingMsg.textContent = 'שגיאה בטעינת השקף.';
-    }
+    if(token !== currentToken) return;
+    if(attempt < 3){ setTimeout(() => loadImage(i, attempt+1, token), 500); }
   };
-  target.src = slideUrl(i) + (attempt ? ('?r=' + attempt) : '');
-  pageCountEl.textContent = (i+1) + ' / ' + manifest.pageCount;
+  target.src = slideUrl(i) + (attempt ? ('?r='+attempt) : '');
 }
 
 function goToPage(i, pushHistory){

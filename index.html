@@ -54,11 +54,11 @@
     min-height:0;
   }
   .card .icon{
-    width:clamp(22px,4vh,38px);
-    height:clamp(22px,4vh,38px);
-    margin-bottom:clamp(4px,1vh,14px);
+    width:clamp(30px,6vh,52px);
+    height:clamp(30px,6vh,52px);
+    margin-bottom:clamp(6px,1.6vh,16px);
   }
-  .card h3{ font-size:clamp(13.5px,2.2vh,18px); margin:0 0 clamp(2px,0.6vh,7px); }
+  .card h3{ font-size:clamp(15px,2.6vh,20px); margin:0; }
   .card p{
     font-size:clamp(10.5px,1.5vh,13px);
     line-height:1.35;
@@ -68,7 +68,9 @@
     -webkit-box-orient:vertical;
     overflow:hidden;
   }
-  .card .go{ font-size:clamp(10.5px,1.4vh,13px); }
+  .card p, .card .go{ display:none; }
+  .card{ align-items:center; text-align:center; }
+  .card .icon{ margin-left:auto; margin-right:auto; }
 
   footer{
     flex:0 0 auto;

@@ -1,14 +1,7 @@
-const CACHE_NAME = 'bdch-squadron-v2';
+const CACHE_NAME = 'bdch-squadron-v3';
 const SLIDES_CACHE = 'bdch-slides-v1';
 
 const CORE_ASSETS = [
-  'index.html',
-  'briefing.html',
-  'trainings.html',
-  'tests.html',
-  'notes.html',
-  'style.css',
-  'manifest.json',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/logo-source.png'
@@ -39,8 +32,8 @@ self.addEventListener('fetch', event => {
   // וידאו וקבצי מצגת גדולים (mp4/pptx) - תמיד מהרשת, לא נשמרים במטמון
   if (url.match(/\.(mp4|pptx)$/)) return;
 
-  // שקפי הבד"ח (slide-XXX.jpg) והמניפסט שלהם -
-  // נשמרים במטמון ייעודי בפעם הראשונה שהם נצפים, וזמינים אופליין מאז
+  // שקפי הבד"ח (slide-XXX.jpg) והמניפסט שלהם - אלה לא משתנים אחרי שנוצרו,
+  // אז נשמרים במטמון ייעודי בפעם הראשונה שהם נצפים, וזמינים אופליין מאז
   if (url.match(/slide-\d+\.jpg(\?.*)?$/) || url.match(/slides-manifest\.json$/)) {
     event.respondWith(
       caches.open(SLIDES_CACHE).then(cache =>
@@ -58,8 +51,14 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // שאר הדף (HTML/CSS/אייקונים) - מהמטמון הראשי אם קיים, אחרת מהרשת
+  // כל שאר הדף (HTML/CSS) - תמיד מנסים רשת קודם, כדי שעדכונים יתפסו מיד.
+  // רק אם באמת אין רשת בכלל, נופלים חזרה לגרסה האחרונה השמורה (אם קיימת).
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+    fetch(event.request).then(response => {
+      if (response && response.ok) {
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, response.clone()));
+      }
+      return response;
+    }).catch(() => caches.match(event.request))
   );
 });

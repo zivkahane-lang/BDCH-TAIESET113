@@ -93,6 +93,10 @@ let manifest = null;
 let pageNum = 0;
 let currentToken = 0; // מונע מצב מרוץ אם עוברים שקף לפני שהקודם סיים להיטען
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
 const viewer = document.getElementById('viewer');
 const img = document.getElementById('pdfCanvasImg');
 const pageWrap = document.getElementById('pageWrap');

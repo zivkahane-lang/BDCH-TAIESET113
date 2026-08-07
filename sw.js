@@ -32,9 +32,23 @@ self.addEventListener('fetch', event => {
   // וידאו וקבצי מצגת גדולים (mp4/pptx) - תמיד מהרשת, לא נשמרים במטמון
   if (url.match(/\.(mp4|pptx)$/)) return;
 
-  // שקפי הבד"ח (slide-XXX.jpg) והמניפסט שלהם - אלה לא משתנים אחרי שנוצרו,
-  // אז נשמרים במטמון ייעודי בפעם הראשונה שהם נצפים, וזמינים אופליין מאז
-  if (url.match(/slide-\d+\.jpg(\?.*)?$/) || url.match(/slides-manifest\.json$/)) {
+  // מניפסט הקישורים (slides-manifest.json) - יכול להשתנות (כמו עכשיו, כשמתקנים
+  // קישור), אז תמיד בודקים מול הרשת קודם, ורק נופלים למטמון אם אין בכלל רשת
+  if (url.match(/slides-manifest\.json$/)) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' }).then(response => {
+        if (response && response.ok) {
+          caches.open(SLIDES_CACHE).then(cache => cache.put(event.request, response.clone()));
+        }
+        return response;
+      }).catch(() => caches.open(SLIDES_CACHE).then(cache => cache.match(event.request)))
+    );
+    return;
+  }
+
+  // תמונות השקפים עצמן (slide-XXX.jpg) - אלה לא משתנות אחרי שנוצרו,
+  // אז נשמרות במטמון ייעודי בפעם הראשונה שהן נצפות, וזמינות אופליין מאז
+  if (url.match(/slide-\d+\.jpg(\?.*)?$/)) {
     event.respondWith(
       caches.open(SLIDES_CACHE).then(cache =>
         cache.match(event.request).then(cached => {

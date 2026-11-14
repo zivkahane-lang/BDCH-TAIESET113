@@ -79,6 +79,30 @@ a{color:inherit; text-decoration:none;}
 }
 .back-link:hover{ color:var(--black); background:var(--yellow); border-color:var(--yellow); }
 
+/* מסכי טלפון: כפתור "חזרה לדף הבית" צף בתחתית המסך - תמיד גלוי, בהישג האגודל,
+   ומעל אזור הבית/ה-notch של האייפון */
+.topbar{ padding-top:calc(18px + env(safe-area-inset-top, 0px)); }
+@media (max-width:640px){
+  body{ padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px)); }
+  .back-link{
+    position:fixed;
+    left:50%; transform:translateX(-50%);
+    bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index:50;
+    justify-content:center;
+    min-height:52px;
+    padding:14px 28px;
+    font-size:16px; font-weight:700;
+    color:var(--black);
+    background:var(--yellow);
+    border-color:var(--yellow);
+    box-shadow:0 8px 24px rgba(0,0,0,.55);
+    white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .back-link:active{ transform:translateX(-50%) scale(.96); }
+}
+
 /* ---------- corner badge (refined, replaces old hazard stripe) ---------- */
 .hazard-tag{
   position:absolute;

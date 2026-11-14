@@ -1,5 +1,5 @@
 const CACHE_NAME = 'bdch-squadron-v3';
-const SLIDES_CACHE = 'bdch-slides-v1';
+const SLIDES_CACHE = 'bdch-slides-v2';
 
 const CORE_ASSETS = [
   'icons/icon-192.png',

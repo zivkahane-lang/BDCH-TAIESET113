@@ -149,16 +149,19 @@ function positionHotspots(){
     // קישור חיצוני (עם url) - כפתור בולט שנפתח בלשונית חדשה
     if(l.url){
       const a = document.createElement('a');
-      a.className = 'hot ext-link';
+      // עם label - כפתור מעוצב; בלי label - אזור לחיצה שקוף מעל כפתור שמצויר בשקף עצמו
+      a.className = l.label ? 'hot ext-link' : 'hot';
       a.href = l.url;
       a.target = '_blank';
       a.rel = 'noopener';
-      a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">'
+      if(l.label) a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">'
         + '<rect x="5" y="2.5" width="14" height="19" rx="2.5"/><rect x="8" y="5.5" width="8" height="3.5" rx=".8"/>'
         + '<path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01" stroke-width="2.4"/></svg>';
-      const span = document.createElement('span');
-      span.textContent = l.label || l.url;
-      a.appendChild(span);
+      if(l.label){
+        const span = document.createElement('span');
+        span.textContent = l.label;
+        a.appendChild(span);
+      }
       a.style.left = (l.x*dispW) + 'px';
       a.style.top = (l.y*dispH) + 'px';
       a.style.width = (l.w*dispW) + 'px';

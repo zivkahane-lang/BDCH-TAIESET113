@@ -35,6 +35,19 @@
     /* background: rgba(0,255,0,0.18); outline:1px solid lime; */
   }
 
+  /* כפתור קישור חיצוני (למשל מחשבון אוטורטציה) - מוצג על גבי השקף */
+  #hotLayer a.ext-link{
+    display:flex; align-items:center; justify-content:center;
+    text-align:center; text-decoration:none;
+    background:linear-gradient(180deg, #f2c94c 0%, #cfa53a 100%);
+    color:#100f0d; font-weight:800;
+    border:2px solid #8a6a17; border-radius:999px;
+    box-shadow:0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.5);
+    font-family:'Segoe UI', Arial, sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #hotLayer a.ext-link:active{ transform:scale(.97); }
+
   .hud{
     position:fixed; top:0; left:0; right:0;
     display:flex; align-items:center; justify-content:space-between;
@@ -130,6 +143,22 @@ function positionHotspots(){
   hotLayer.innerHTML = '';
   const links = manifest.pages[pageNum].links;
   links.forEach(l => {
+    // קישור חיצוני (עם url) - כפתור בולט שנפתח בלשונית חדשה
+    if(l.url){
+      const a = document.createElement('a');
+      a.className = 'hot ext-link';
+      a.href = l.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = l.label || l.url;
+      a.style.left = (l.x*dispW) + 'px';
+      a.style.top = (l.y*dispH) + 'px';
+      a.style.width = (l.w*dispW) + 'px';
+      a.style.height = (l.h*dispH) + 'px';
+      a.style.fontSize = Math.max(12, l.h*dispH*0.38) + 'px';
+      hotLayer.appendChild(a);
+      return;
+    }
     const div = document.createElement('div');
     div.className = 'hot';
     div.style.left = (l.x*dispW) + 'px';
@@ -153,7 +182,7 @@ function positionHotspots(){
 
 function preloadLimited(){
   const links = manifest.pages[pageNum].links;
-  const targets = [...new Set(links.map(l => l.page))].slice(0, 6);
+  const targets = [...new Set(links.filter(l => typeof l.page === 'number').map(l => l.page))].slice(0, 6);
   targets.forEach(p => { const im = new Image(); im.src = slideUrl(p); });
 }
 
